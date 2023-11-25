@@ -9,6 +9,12 @@ export class User {
     @Column()
     name: string
 
+    @Column()
+    email: string
+
+    @Column()
+    password: string
+    
     @OneToMany(() => Photo, (photo) => photo.user)
     photos: Photo[]
 }
