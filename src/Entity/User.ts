@@ -14,6 +14,9 @@ export class User {
 
     @Column()
     password: string
+
+    @Column()
+    CV: string
     
     @OneToMany(() => Photo, (photo) => photo.user)
     photos: Photo[]
