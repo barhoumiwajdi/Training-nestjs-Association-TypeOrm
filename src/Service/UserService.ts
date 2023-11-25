@@ -5,6 +5,7 @@ import { Repository } from 'typeorm';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer'
 import { extname } from 'path'
+import { ExampleService } from './Email.Service';
 
 
 @Injectable()
@@ -12,7 +13,8 @@ export class UserService {
   constructor(
     @Inject('USER_REPOSITORY')
     private UserRepository: Repository<User>,
-    private jwtService: JwtService
+    private jwtService: JwtService ,
+    private EmailService : ExampleService
   ) { }
   async signup(user: User): Promise<any> {
     try {
@@ -24,7 +26,9 @@ export class UserService {
         throw new BadRequestException('User Already Exist', { cause: new Error(), description: 'Some error description' })
       }
       else {
+        await this.EmailService.example(user.email)
         return this.UserRepository.save(user)
+      
       }
     } catch (error) {
       throw new HttpException({
