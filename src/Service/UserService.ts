@@ -46,8 +46,6 @@ export class UserService {
         where: { email }
       });
       if (user) {
-
-
         if (user?.password !== pass) {
           throw new UnauthorizedException();
         }

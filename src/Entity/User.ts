@@ -17,7 +17,9 @@ export class User {
 
     @Column()
     CV: string
-    
+
     @OneToMany(() => Photo, (photo) => photo.user)
     photos: Photo[]
+
+
 }

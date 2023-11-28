@@ -5,7 +5,7 @@ import { User } from '../Entity/User';
 import { AuthGuard } from '../Guard/AuthGuard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
- 
+
 @Controller('user')
 export class UserController {
   constructor(private service: UserService) { }
