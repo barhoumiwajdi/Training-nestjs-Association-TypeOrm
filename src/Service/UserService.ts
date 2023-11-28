@@ -1,4 +1,4 @@
-import { Injectable, Inject, UnauthorizedException, BadRequestException, HttpException, HttpStatus ,UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Injectable, Inject, UnauthorizedException, BadRequestException, HttpException, HttpStatus, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '../Entity/User';
 import { Repository } from 'typeorm';
@@ -13,8 +13,8 @@ export class UserService {
   constructor(
     @Inject('USER_REPOSITORY')
     private UserRepository: Repository<User>,
-    private jwtService: JwtService ,
-    private EmailService : ExampleService
+    private jwtService: JwtService,
+    private EmailService: ExampleService
   ) { }
   async signup(user: User): Promise<any> {
     try {
@@ -28,7 +28,7 @@ export class UserService {
       else {
         await this.EmailService.example(user.email)
         return this.UserRepository.save(user)
-      
+
       }
     } catch (error) {
       throw new HttpException({
@@ -38,7 +38,7 @@ export class UserService {
         cause: error
       });
     }
-   
+
   }
   async signIn(email: string, pass: string): Promise<any> {
     try {
@@ -70,10 +70,45 @@ export class UserService {
     });
   }
 
-  async findone(email: string): Promise<User | undefined> {
-    return this.UserRepository.findOne({
-      where: { email: email },
-    });
+  async finByName(name: any) {
+    try {
+      const data = await this.UserRepository.findOne({
+        where: { firstname: name }
+      })
+      if (data) {
+        return data
+      }
+      else {
+        throw new BadRequestException('User Not found',
+          {
+            cause: new Error(),
+            description: 'Some error description'
+          })
+      }
+
+    } catch (error) {
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: 'This is a custom message Internal Error',
+      }, HttpStatus.INTERNAL_SERVER_ERROR, {
+        cause: error
+      });
+    }
+  }
+  async deleteUser(id: any) {
+    try {
+      const data = await this.UserRepository.destroy({
+        where: { id: id }
+      })
+      return "user deleted succefully "
+    } catch (error) {
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: " this internal Serveur "
+      }, HttpStatus.INTERNAL_SERVER_ERROR, {
+        cause: error
+      })
+    }
   }
 
   @UseInterceptors(FileInterceptor('file', {
@@ -87,8 +122,8 @@ export class UserService {
       }
     })
   }))
-  async upload( @UploadedFile() file) {
+  async upload(@UploadedFile() file) {
     console.log(file)
   }
-  
+
 }
