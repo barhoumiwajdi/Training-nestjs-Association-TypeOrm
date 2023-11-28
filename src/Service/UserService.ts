@@ -45,14 +45,25 @@ export class UserService {
       const user = await this.UserRepository.findOne({
         where: { email }
       });
-      if (user?.password !== pass) {
-        throw new UnauthorizedException();
-      }
-      const payload = { sub: user.id, username: user.email };
-      return {
-        access_token: await this.jwtService.signAsync(payload),
+      if (user) {
 
-      };
+
+        if (user?.password !== pass) {
+          throw new UnauthorizedException();
+        }
+        const payload = { sub: user.id, username: user.email };
+        return {
+          access_token: await this.jwtService.signAsync(payload),
+        }
+      }
+      else {
+        throw new BadRequestException('Vérifier email and password',
+          {
+            cause: new Error(),
+            description: 'Some error description'
+          })
+      }
+      ;
     } catch (error) {
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
