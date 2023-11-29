@@ -57,10 +57,16 @@ export class UserService {
           throw new BadRequestException('User verify email and password', { cause: new Error(), description: 'Some error description' })
 
         }
-        const payload = { sub: user.id, username: user.email };
-        return {
-          access_token: await this.jwtService.signAsync(payload),
+        if (user.Status == true) {
+          const payload = { sub: user.id, username: user.email };
+          return {
+            access_token: await this.jwtService.signAsync(payload),
+          }
         }
+        else {
+          throw new UnauthorizedException("Account has beeen désactivated")
+        }
+
       }
       else {
         throw new BadRequestException('Vérifier email and password',
@@ -139,12 +145,19 @@ export class UserService {
   }
   async deleteUser(id: any) {
     try {
-      const data = await this.UserRepository.createQueryBuilder()
-        .delete()
-        .from(User)
-        .where('id = :id', { id })
-        .execute()
-      return "user deleted succefully "
+      const state = false
+      await this.UserRepository
+        .createQueryBuilder()
+        .update(User)
+        .set({ Status: state })
+        .where({ id: id })
+        .execute();
+      throw new HttpException({
+        status: HttpStatus.ACCEPTED,
+        error: "user banned"
+      },
+        HttpStatus.ACCEPTED)
+
     } catch (error) {
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,

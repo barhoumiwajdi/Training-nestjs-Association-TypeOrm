@@ -15,15 +15,18 @@ export class UserController {
   findAll() {
     return this.service.findAll();
   }
+  @HttpCode(HttpStatus.OK)
   @Post()
   create(@Body() user: User) {
     return this.service.signup(user);
   }
-
+  @HttpCode(HttpStatus.OK)
   @Get(':id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
     return this.service.findById(id);
   }
+
+  @HttpCode(HttpStatus.OK)
   @Get('search/:name')
   async findOnebyname(@Param('name') name: string) {
     return this.service.finByName(name);
@@ -34,11 +37,23 @@ export class UserController {
     return this.service.signIn(signInDto.email, signInDto.password);
   }
 
+
+  @HttpCode(HttpStatus.OK)
+  @UseGuards(AuthGuard)
+  @Get('delete/:id')
+  async DeleteOne(@Param('id', ParseIntPipe) id: number) {
+    return this.service.deleteUser(id);
+  }
+
+
+  @HttpCode(HttpStatus.OK)
   @UseGuards(AuthGuard)
   @Get('profile')
   getProfile(@Request() req) {
     return req.user;
   }
+
+  @HttpCode(HttpStatus.OK)
   @Post('local')
   @UseInterceptors(
     FileInterceptor('file', {
