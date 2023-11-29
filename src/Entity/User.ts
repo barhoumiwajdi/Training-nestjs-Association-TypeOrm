@@ -1,6 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm"
 import { Photo } from "./Photo"
-
+import { IsEmail, IsNotEmpty } from 'class-validator'
 @Entity()
 export class User {
     @PrimaryGeneratedColumn()
@@ -9,10 +9,10 @@ export class User {
     @Column()
     name: string
 
-    @Column()
+    @IsEmail()
     email: string
 
-    @Column()
+    @IsNotEmpty()
     password: string
 
     @Column()

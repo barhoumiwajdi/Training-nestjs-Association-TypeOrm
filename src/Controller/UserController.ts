@@ -1,10 +1,11 @@
 
-import { Controller, Get, HttpCode, Body, HttpStatus, Post, UseGuards, Request, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Controller, Get, HttpCode, Param, Body, HttpStatus, Post, UseGuards, Request, UseInterceptors, UploadedFile } from '@nestjs/common';
 import { UserService } from '../Service/UserService';
 import { User } from '../Entity/User';
 import { AuthGuard } from '../Guard/AuthGuard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
+import { DefaultValuePipe, ParseIntPipe } from '@nestjs/common';
 
 @Controller('user')
 export class UserController {
@@ -19,7 +20,14 @@ export class UserController {
     return this.service.signup(user);
   }
 
-
+  @Get(':id')
+  async findOne(@Param('id', ParseIntPipe) id: number) {
+    return this.service.findById(id);
+  }
+  @Get('search/:name')
+  async findOnebyname(@Param('name') name: string) {
+    return this.service.finByName(name);
+  }
   @HttpCode(HttpStatus.OK)
   @Post('login')
   signIn(@Body() signInDto: Record<string, any>) {

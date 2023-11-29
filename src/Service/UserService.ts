@@ -5,16 +5,18 @@ import { Repository } from 'typeorm';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer'
 import { extname } from 'path'
-import { ExampleService } from './Email.Service';
+import * as bcrypt from 'bcrypt';
+
 
 
 @Injectable()
 export class UserService {
+
   constructor(
     @Inject('USER_REPOSITORY')
     private UserRepository: Repository<User>,
-    private jwtService: JwtService,
-    private EmailService: ExampleService
+    private jwtService: JwtService
+
   ) { }
   async signup(user: User): Promise<any> {
     try {
@@ -26,11 +28,15 @@ export class UserService {
         throw new BadRequestException('User Already Exist', { cause: new Error(), description: 'Some error description' })
       }
       else {
-        await this.EmailService.example(user.email)
+        const saltOrRounds = 10;
+
+        user.password = await bcrypt.hash(user.password, saltOrRounds);
+
         return this.UserRepository.save(user)
 
       }
     } catch (error) {
+
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: 'This is a custom message Internal Error',
@@ -46,8 +52,10 @@ export class UserService {
         where: { email }
       });
       if (user) {
-        if (user?.password !== pass) {
-          throw new UnauthorizedException();
+        const isMatch = await bcrypt.compare(pass, user?.password);
+        if (!isMatch) {
+          throw new BadRequestException('User verify email and password', { cause: new Error(), description: 'Some error description' })
+
         }
         const payload = { sub: user.id, username: user.email };
         return {
@@ -82,7 +90,32 @@ export class UserService {
   async finByName(name: any) {
     try {
       const data = await this.UserRepository.findOne({
-        where: { firstname: name }
+        where: { name: name }
+      })
+      if (data) {
+        return data
+      }
+      else {
+        throw new BadRequestException('User Not found',
+          {
+            cause: new Error(),
+            description: 'Some error description'
+          })
+      }
+
+    } catch (error) {
+      throw new HttpException({
+        status: HttpStatus.INTERNAL_SERVER_ERROR,
+        error: 'This is a custom message Internal Error',
+      }, HttpStatus.INTERNAL_SERVER_ERROR, {
+        cause: error
+      });
+    }
+  }
+  async findById(id: number) {
+    try {
+      const data = await this.UserRepository.findOne({
+        where: { id: id }
       })
       if (data) {
         return data
@@ -106,9 +139,11 @@ export class UserService {
   }
   async deleteUser(id: any) {
     try {
-      const data = await this.UserRepository.destroy({
-        where: { id: id }
-      })
+      const data = await this.UserRepository.createQueryBuilder()
+        .delete()
+        .from(User)
+        .where('id = :id', { id })
+        .execute()
       return "user deleted succefully "
     } catch (error) {
       throw new HttpException({

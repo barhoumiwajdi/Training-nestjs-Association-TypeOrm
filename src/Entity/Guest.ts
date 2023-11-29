@@ -4,17 +4,17 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm"
 @Entity()
 export class Guest {
     @PrimaryGeneratedColumn()
-    @Column
-    declare id: number;
 
-    @Column
+    id: number;
 
-    declare firstName: string;
+    @Column()
 
-    @Column
-    declare lastName: string | null;
+    firstName: string;
 
-    @Column
-    declare email: string | null;
+    @Column()
+    lastName: string | null;
+
+    @Column()
+    email: string | null;
 
 }

@@ -4,13 +4,13 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm"
 @Entity()
 export class Role {
     @PrimaryGeneratedColumn()
-    @Column
+
     id: number
 
-    @Column
+    @Column()
     Name: string;
 
-    @Column
+    @Column()
     Description: string;
 
 }
