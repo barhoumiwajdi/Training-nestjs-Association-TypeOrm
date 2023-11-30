@@ -9,18 +9,18 @@ export class Photo {
   @Column({ length: 500 })
   name: string;
 
+  @Column()
+  filePath: string
+
   @Column('text')
   description: string;
-
-  @Column()
-  filename: string;
 
   @Column('int')
   views: number;
 
-  @Column()
+  @Column({ default: true })
   isPublished: boolean;
-  
+
   @ManyToOne(() => User, (user) => user.photos)
   user: User
 }

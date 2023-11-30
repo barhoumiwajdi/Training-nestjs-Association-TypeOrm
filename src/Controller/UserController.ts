@@ -6,6 +6,8 @@ import { AuthGuard } from '../Guard/AuthGuard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
 import { DefaultValuePipe, ParseIntPipe } from '@nestjs/common';
+import { UserDto } from "../Dto/User-Dto"
+import { PhotoService } from 'src/Service/PhotoService';
 
 @Controller('user')
 export class UserController {
@@ -15,10 +17,25 @@ export class UserController {
   findAll() {
     return this.service.findAll();
   }
+
   @HttpCode(HttpStatus.OK)
-  @Post()
-  create(@Body() user: User) {
-    return this.service.signup(user);
+  @UseInterceptors(
+    FileInterceptor('file', {
+      storage: diskStorage({
+        destination: 'public/img',
+        filename: (req, file, cb) => {
+          cb(null, file.originalname);
+        },
+      }),
+    }),
+  )
+  @Post('register')
+  async create(@Body() userDto: User, @UploadedFile() file: Express.Multer.File, @Request() req) {
+    console.log(file)
+    userDto = JSON.parse(JSON.stringify(req.body));
+    console.log(userDto)
+
+    return this.service.signup(userDto);
   }
   @HttpCode(HttpStatus.OK)
   @Get(':id')
@@ -66,9 +83,12 @@ export class UserController {
     }),
   )
   async local(@UploadedFile() file: Express.Multer.File) {
+    console.log(file)
     return {
       statusCode: 200,
       data: file.path,
     };
   }
+
+
 }

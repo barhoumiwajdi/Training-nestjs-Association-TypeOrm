@@ -11,6 +11,7 @@ export class User {
     name: string
 
     @IsEmail()
+    @Column()
     email: string
 
     @IsNotEmpty()
@@ -19,7 +20,7 @@ export class User {
     @Column()
     CV: string
 
-    @Column({ default: "ACTIVE" })
+    @Column({ default: true })
     Status: Boolean
 
     @OneToMany(() => Photo, (photo) => photo.user)

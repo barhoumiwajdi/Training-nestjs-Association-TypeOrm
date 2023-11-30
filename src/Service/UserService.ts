@@ -9,23 +9,25 @@ import * as bcrypt from 'bcrypt';
 
 
 
+
 @Injectable()
 export class UserService {
 
   constructor(
     @Inject('USER_REPOSITORY')
     private UserRepository: Repository<User>,
-    private jwtService: JwtService
+    private jwtService: JwtService,
+
 
   ) { }
   async signup(user: User): Promise<any> {
     try {
       const email = user.email
-      const found = await this.UserRepository.findOne({
-        where: { email: email }
-      })
+      const found = await this.UserRepository.createQueryBuilder()
+        .where('email = :email', { email })
+        .getOne();
       if (found) {
-        throw new BadRequestException('User Already Exist', { cause: new Error(), description: 'Some error description' })
+        return new BadRequestException('User Already Exist', { cause: new Error(), description: 'Some error description' })
       }
       else {
         const saltOrRounds = 10;
@@ -36,7 +38,7 @@ export class UserService {
 
       }
     } catch (error) {
-
+      console.log(error)
       throw new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: 'This is a custom message Internal Error',
