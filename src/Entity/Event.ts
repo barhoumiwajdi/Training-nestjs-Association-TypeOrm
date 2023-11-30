@@ -4,21 +4,22 @@ import { Entity, PrimaryGeneratedColumn, Column, OneToMany } from "typeorm"
 @Entity()
 export class Event {
     @PrimaryGeneratedColumn()
-
-    id: number;
-
-    @Column()
-
-    Title: string;
+    id: number
 
     @Column()
-    Description: string | null;
+    title: string
 
     @Column()
-    Lieu: string | null;
-
+    start: Date
 
     @Column()
-    Date: Date | null;
+    end: Date
+
+    @Column()
+    color: string
+
+    @Column()
+    info: string
+
 
 }

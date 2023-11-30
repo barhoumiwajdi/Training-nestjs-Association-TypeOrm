@@ -19,7 +19,7 @@ export class User {
     @Column()
     CV: string
 
-    @Column({ default: true })
+    @Column({ default: "ACTIVE" })
     Status: Boolean
 
     @OneToMany(() => Photo, (photo) => photo.user)
