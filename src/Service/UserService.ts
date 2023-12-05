@@ -10,10 +10,6 @@ import { UserDto } from 'src/Dto/User-Dto';
 import { Tokendto } from 'src/Dto/Token-Dto';
 import { Token } from 'src/Entity/Token';
 
-
-
-
-
 @Injectable()
 export class UserService {
 
@@ -115,6 +111,7 @@ export class UserService {
     return this.UserRepository.find({
       relations: {
         photos: true,
+        role: true
       },
     });
   }
@@ -178,11 +175,7 @@ export class UserService {
         .set({ Status: state })
         .where({ id: id })
         .execute();
-      return new HttpException({
-        status: HttpStatus.ACCEPTED,
-        error: "user banned"
-      },
-        HttpStatus.ACCEPTED)
+      return "user banned"
 
     } catch (error) {
       return new HttpException({
@@ -206,7 +199,5 @@ export class UserService {
   async upload(@UploadedFile() file) {
     console.log(file)
   }
-
-
 }
 
