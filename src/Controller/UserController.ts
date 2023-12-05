@@ -8,6 +8,7 @@ import { diskStorage } from 'multer';
 import { DefaultValuePipe, ParseIntPipe } from '@nestjs/common';
 import { UserDto } from "../Dto/User-Dto"
 import { PhotoService } from 'src/Service/PhotoService';
+import { Tokendto } from 'src/Dto/Token-Dto';
 
 @Controller('user')
 export class UserController {
@@ -30,28 +31,36 @@ export class UserController {
     }),
   )
   @Post('register')
-  async create(@Body() userDto: User, @UploadedFile() file: Express.Multer.File, @Request() req) {
-    console.log(file)
-    userDto = JSON.parse(JSON.stringify(req.body));
-    console.log(userDto)
+  async create(@Body() SaveData: UserDto, @UploadedFile() file: Express.Multer.File, @Request() req) {
 
-    return this.service.signup(userDto);
+    const user = JSON.parse(JSON.stringify(req.body));
+
+    user.Image = file.path
+    SaveData = {
+      name: user.name,
+      email: user.email,
+      password: user.password,
+      Image: user.Image
+    }
+
+    return this.service.signup(SaveData);
   }
   @HttpCode(HttpStatus.OK)
-  @Get(':id')
+  @Get('serachbyid/:id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
     return this.service.findById(id);
   }
 
   @HttpCode(HttpStatus.OK)
-  @Get('search/:name')
+  @Get('searchbyname/:name')
   async findOnebyname(@Param('name') name: string) {
     return this.service.finByName(name);
   }
   @HttpCode(HttpStatus.OK)
   @Post('login')
-  signIn(@Body() signInDto: Record<string, any>) {
-    return this.service.signIn(signInDto.email, signInDto.password);
+  signIn(@Body() user: User, token: Tokendto) {
+    console.log(user)
+    return this.service.signIn(user, token);
   }
 
 

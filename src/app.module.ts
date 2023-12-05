@@ -6,10 +6,11 @@ import { PhotoModule } from './Module/Photo.Module';
 import { DatabaseModule } from './database/database.module';
 import { UserModule } from './Module/User.Module';
 import { MailerModule } from '@nestjs-modules/mailer';
- 
- 
+
+
 import { HandlebarsAdapter } from '@nestjs-modules/mailer/dist/adapters/handlebars.adapter';
 import { join } from 'path';
+import { TokenModule } from './Module/Token.Module';
 
 @Module({
   imports: [MailerModule.forRoot({
@@ -34,8 +35,8 @@ import { join } from 'path';
         strict: true,
       },
     },
-  }),PhotoModule , DatabaseModule , UserModule],
-  controllers: [AppController  ],
-  providers: [AppService ],
+  }), PhotoModule, DatabaseModule, UserModule, TokenModule],
+  controllers: [AppController],
+  providers: [AppService],
 })
-export class AppModule {}
+export class AppModule { }

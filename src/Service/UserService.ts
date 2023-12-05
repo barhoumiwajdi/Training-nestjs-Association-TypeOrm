@@ -6,6 +6,10 @@ import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer'
 import { extname } from 'path'
 import * as bcrypt from 'bcrypt';
+import { UserDto } from 'src/Dto/User-Dto';
+import { Tokendto } from 'src/Dto/Token-Dto';
+import { Token } from 'src/Entity/Token';
+
 
 
 
@@ -15,12 +19,14 @@ export class UserService {
 
   constructor(
     @Inject('USER_REPOSITORY')
+    @Inject('TOKEN_REPOSITORY')
     private UserRepository: Repository<User>,
+    //private TokenRepository: Repository<Token>,
     private jwtService: JwtService,
 
 
   ) { }
-  async signup(user: User): Promise<any> {
+  async signup(user: UserDto): Promise<any> {
     try {
       const email = user.email
       const found = await this.UserRepository.createQueryBuilder()
@@ -39,7 +45,7 @@ export class UserService {
       }
     } catch (error) {
       console.log(error)
-      throw new HttpException({
+      return new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: 'This is a custom message Internal Error',
       }, HttpStatus.INTERNAL_SERVER_ERROR, {
@@ -48,30 +54,47 @@ export class UserService {
     }
 
   }
-  async signIn(email: string, pass: string): Promise<any> {
+  async signIn(user: User, token: Tokendto): Promise<any> {
+    console.log(user)
     try {
-      const user = await this.UserRepository.findOne({
+      const email = user.email
+      const data = await this.UserRepository.findOne({
         where: { email }
       });
+      console.log(data)
       if (user) {
-        const isMatch = await bcrypt.compare(pass, user?.password);
+        console.log('before hash')
+        const isMatch = await bcrypt.compare(user.password, data.password);
+        console.log(isMatch)
         if (!isMatch) {
-          throw new BadRequestException('User verify email and password', { cause: new Error(), description: 'Some error description' })
+          return new BadRequestException('User verify email and password', { cause: new Error(), description: 'Some error description' })
 
         }
-        if (user.Status == true) {
-          const payload = { sub: user.id, username: user.email };
+        else if ((data.Status == true) && isMatch) {
+          const payload = { sub: data.id, username: data.email };
+
+          const access_token = await this.jwtService.signAsync(payload)
+
+          /*    token = {
+          token: access_token,
+          userId: data.id
+        }
+        const saved = await this.TokenRepository.create(token)
+        data.tokens.push(saved)
+        await this.UserRepository.update(data.id, data)*/
           return {
-            access_token: await this.jwtService.signAsync(payload),
+
+            access_token,
+            data
           }
         }
         else {
-          throw new UnauthorizedException("Account has beeen désactivated")
+          return new UnauthorizedException("Account has beeen désactivated")
         }
 
       }
       else {
-        throw new BadRequestException('Vérifier email and password',
+        return new BadRequestException('Vérifier email and password',
           {
             cause: new Error(),
             description: 'Some error description'
@@ -79,7 +102,8 @@ export class UserService {
       }
       ;
     } catch (error) {
-      throw new HttpException({
+      console.log(error)
+      return new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: 'This is a custom message Internal Error',
       }, HttpStatus.INTERNAL_SERVER_ERROR, {
@@ -104,7 +128,7 @@ export class UserService {
         return data
       }
       else {
-        throw new BadRequestException('User Not found',
+        return new BadRequestException('User Not found',
           {
             cause: new Error(),
             description: 'Some error description'
@@ -112,7 +136,7 @@ export class UserService {
       }
 
     } catch (error) {
-      throw new HttpException({
+      return new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: 'This is a custom message Internal Error',
       }, HttpStatus.INTERNAL_SERVER_ERROR, {
@@ -129,7 +153,7 @@ export class UserService {
         return data
       }
       else {
-        throw new BadRequestException('User Not found',
+        return new BadRequestException('User Not found',
           {
             cause: new Error(),
             description: 'Some error description'
@@ -137,7 +161,7 @@ export class UserService {
       }
 
     } catch (error) {
-      throw new HttpException({
+      return new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: 'This is a custom message Internal Error',
       }, HttpStatus.INTERNAL_SERVER_ERROR, {
@@ -154,14 +178,14 @@ export class UserService {
         .set({ Status: state })
         .where({ id: id })
         .execute();
-      throw new HttpException({
+      return new HttpException({
         status: HttpStatus.ACCEPTED,
         error: "user banned"
       },
         HttpStatus.ACCEPTED)
 
     } catch (error) {
-      throw new HttpException({
+      return new HttpException({
         status: HttpStatus.INTERNAL_SERVER_ERROR,
         error: " this internal Serveur "
       }, HttpStatus.INTERNAL_SERVER_ERROR, {
@@ -174,9 +198,7 @@ export class UserService {
     storage: diskStorage({
       destination: './uploads'
       , filename: (req, file, cb) => {
-        // Generating a 32 random chars long string
         const randomName = Array(32).fill(null).map(() => (Math.round(Math.random() * 16)).toString(16)).join('')
-        //Calling the callback passing the random name generated with the original extension name
         cb(null, `${randomName}${extname(file.originalname)}`)
       }
     })
@@ -185,4 +207,6 @@ export class UserService {
     console.log(file)
   }
 
+
 }
+
