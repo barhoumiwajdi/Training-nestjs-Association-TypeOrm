@@ -5,9 +5,8 @@ import { User } from '../Entity/User';
 import { AuthGuard } from '../Guard/AuthGuard';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { diskStorage } from 'multer';
-import { DefaultValuePipe, ParseIntPipe } from '@nestjs/common';
+import { ParseIntPipe } from '@nestjs/common';
 import { UserDto } from "../Dto/User-Dto"
-import { PhotoService } from 'src/Service/PhotoService';
 import { Tokendto } from 'src/Dto/Token-Dto';
 
 @Controller('user')
