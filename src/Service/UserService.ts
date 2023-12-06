@@ -8,16 +8,16 @@ import { extname } from 'path'
 import * as bcrypt from 'bcrypt';
 import { UserDto } from 'src/Dto/User-Dto';
 import { Tokendto } from 'src/Dto/Token-Dto';
-import { Token } from 'src/Entity/Token';
+
 
 @Injectable()
 export class UserService {
 
   constructor(
     @Inject('USER_REPOSITORY')
-    @Inject('TOKEN_REPOSITORY')
+
     private UserRepository: Repository<User>,
-    //private TokenRepository: Repository<Token>,
+
     private jwtService: JwtService,
 
 
@@ -168,6 +168,7 @@ export class UserService {
   }
   async deleteUser(id: any) {
     try {
+
       const state = false
       await this.UserRepository
         .createQueryBuilder()
