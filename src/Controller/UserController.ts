@@ -18,7 +18,7 @@ export class UserController {
     return this.service.findAll();
   }
 
-  @HttpCode(HttpStatus.OK)
+
   @UseInterceptors(
     FileInterceptor('file', {
       storage: diskStorage({
@@ -32,38 +32,41 @@ export class UserController {
   @Post('register')
   async create(@Body() SaveData: UserDto, @UploadedFile() file: Express.Multer.File, @Request() req) {
 
-    const user = JSON.parse(JSON.stringify(req.body));
-
-    user.Image = file.path
+    const user = JSON.parse(req.body.data);
+    console.log(user)
+    console.log(file)
+    const ImageProfil = file.originalname
     SaveData = {
-      name: user.name,
+      firstname: user.firstname,
+      lastname: user.lastname,
       email: user.email,
       password: user.password,
-      Image: user.Image
+      Image: ImageProfil
     }
 
     return this.service.signup(SaveData);
   }
-  @HttpCode(HttpStatus.OK)
+
   @Get('serachbyid/:id')
   async findOne(@Param('id', ParseIntPipe) id: number) {
     return this.service.findById(id);
   }
 
-  @HttpCode(HttpStatus.OK)
+
   @Get('searchbyname/:name')
   async findOnebyname(@Param('name') name: string) {
     return this.service.finByName(name);
   }
-  @HttpCode(HttpStatus.OK)
+
   @Post('login')
-  signIn(@Body() user: User, token: Tokendto) {
+  @HttpCode(200)
+  signIn(@Body() user: User) {
     console.log(user)
-    return this.service.signIn(user, token);
+    return this.service.signIn(user);
   }
 
 
-  @HttpCode(HttpStatus.OK)
+
   @UseGuards(AuthGuard)
   @Get('delete/:id')
   async DeleteOne(@Param('id', ParseIntPipe) id: number) {

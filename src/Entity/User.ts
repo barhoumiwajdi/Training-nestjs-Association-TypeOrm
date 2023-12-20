@@ -3,20 +3,31 @@ import { Photo } from "./Photo"
 import { IsEmail, IsNotEmpty } from 'class-validator'
 import { Role } from "./Role"
 import { Token } from "./Token"
+
+export enum UserRole {
+    ADMIN = "ADMIN",
+    MANAGER = "MANAGER",
+    USER = "USER"
+}
 @Entity()
+
+
 export class User {
     @PrimaryGeneratedColumn()
     id: number
 
     @Column()
-    name: string
+    firstname: string
 
-    @IsEmail()
     @Column()
+    lastname: string
+
+    @Column()
+    @IsEmail()
     email: string
 
-    @IsNotEmpty()
     @Column()
+    @IsNotEmpty()
     password: string
 
     @Column()
@@ -28,11 +39,14 @@ export class User {
     @OneToMany(() => Photo, (photo) => photo.user)
     photos: Photo[]
 
-
     @OneToMany(() => Token, (token) => token.user)
     tokens: Token[]
 
 
-    @ManyToOne(() => Role, (role) => role.users)
-    role: Role
+    @Column({
+        type: "enum",
+        enum: UserRole,
+        default: UserRole.USER
+    })
+    Role: UserRole;
 }

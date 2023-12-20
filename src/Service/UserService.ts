@@ -1,4 +1,4 @@
-import { Injectable, Inject, UnauthorizedException, BadRequestException, HttpException, HttpStatus, UseInterceptors, UploadedFile } from '@nestjs/common';
+import { Injectable, Inject, UnauthorizedException, BadRequestException, HttpException, HttpStatus, UseInterceptors, UploadedFile, InternalServerErrorException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { User } from '../Entity/User';
 import { Repository } from 'typeorm';
@@ -7,7 +7,7 @@ import { diskStorage } from 'multer'
 import { extname } from 'path'
 import * as bcrypt from 'bcrypt';
 import { UserDto } from 'src/Dto/User-Dto';
-import { Tokendto } from 'src/Dto/Token-Dto';
+
 
 
 @Injectable()
@@ -27,7 +27,7 @@ export class UserService {
       const email = user.email
       const found = await this.UserRepository.createQueryBuilder()
         .where('email = :email', { email })
-        .getOne();
+        .getOne()
       if (found) {
         return new BadRequestException('User Already Exist', { cause: new Error(), description: 'Some error description' })
       }
@@ -50,68 +50,52 @@ export class UserService {
     }
 
   }
-  async signIn(user: User, token: Tokendto): Promise<any> {
+  async signIn(user: User): Promise<any> {
     console.log(user)
-    try {
-      const email = user.email
-      const data = await this.UserRepository.findOne({
-        where: { email }
-      });
-      console.log(data)
-      if (user) {
-        console.log('before hash')
-        const isMatch = await bcrypt.compare(user.password, data.password);
-        console.log(isMatch)
-        if (!isMatch) {
-          return new BadRequestException('User verify email and password', { cause: new Error(), description: 'Some error description' })
 
+
+    console.log("this data is comming from front end ", user)
+    const data = await this.UserRepository.findOne({
+      where:
+        { email: user.email }
+
+    });
+    console.log("this is object log", data)
+    if (user) {
+
+      const isMatch = await bcrypt.compare(user.password, data.password);
+      console.log(isMatch)
+      if (!isMatch) {
+        throw new BadRequestException('User verify email and password', { cause: new Error(), description: 'Some error description' })
+      }
+      else if ((data.Status == true) && isMatch) {
+        const payload = { sub: data.id, username: data.email };
+
+        const access_token = await this.jwtService.signAsync(payload)
+
+        return {
+          access_token,
+          data
         }
-        else if ((data.Status == true) && isMatch) {
-          const payload = { sub: data.id, username: data.email };
-
-          const access_token = await this.jwtService.signAsync(payload)
-
-          /*    token = {
-          token: access_token,
-          userId: data.id
-        }
-        const saved = await this.TokenRepository.create(token)
-        data.tokens.push(saved)
-        await this.UserRepository.update(data.id, data)*/
-          return {
-
-            access_token,
-            data
-          }
-        }
-        else {
-          return new UnauthorizedException("Account has beeen désactivated")
-        }
-
       }
       else {
-        return new BadRequestException('Vérifier email and password',
-          {
-            cause: new Error(),
-            description: 'Some error description'
-          })
+        throw new UnauthorizedException("Account has beeen désactivated")
       }
-      ;
-    } catch (error) {
-      console.log(error)
-      return new HttpException({
-        status: HttpStatus.INTERNAL_SERVER_ERROR,
-        error: 'This is a custom message Internal Error',
-      }, HttpStatus.INTERNAL_SERVER_ERROR, {
-        cause: error
-      });
+
+    }
+    else {
+      throw new BadRequestException('Vérifier email and password',
+        {
+          cause: new Error(),
+          description: 'Some error description'
+        })
     }
   }
   async findAll(): Promise<User[]> {
     return this.UserRepository.find({
       relations: {
-        photos: true,
-        role: true
+        photos: true
+
       },
     });
   }
@@ -119,7 +103,7 @@ export class UserService {
   async finByName(name: any) {
     try {
       const data = await this.UserRepository.findOne({
-        where: { name: name }
+        where: { lastname: name }
       })
       if (data) {
         return data
